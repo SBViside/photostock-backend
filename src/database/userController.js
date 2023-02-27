@@ -13,15 +13,16 @@ export class userController {
         try {
             const { username, password } = req.body;
 
-            const response = await connection.query(`SELECT id, password FROM users WHERE username='${username}'`);
+            const response = await connection.query(
+                `SELECT id, password FROM users WHERE username='${username}'`
+            );
 
-            const hashedPassword = response.rows[0].password;
-            const userId = response.rows[0].id;
+            const userId = response.rows[0]?.id;
+            const hashedPassword = response.rows[0]?.password;
 
             if (!hashedPassword) {
                 return res.status(403).json({ message: "Incorrect username" });
             }
-
             if (!bcrypt.compareSync(password, hashedPassword)) {
                 return res.status(403).json({ message: "Incorrect password" });
             }
@@ -30,7 +31,7 @@ export class userController {
             return res.json({ token });
         } catch (error) {
             console.log(error);
-            return res.json({ message: error.message });
+            return res.json({ message: "Login Error" });
         }
     }
 }
