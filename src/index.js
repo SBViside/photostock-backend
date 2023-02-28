@@ -1,6 +1,6 @@
 import Express from 'express';
 import router from './routes.js';
-import { __dirname } from './path.js';
+import { __dirname } from './modules/path.js';
 
 const PORT = 5999;
 const App = Express();
