@@ -2,23 +2,21 @@ import connection from './connection.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { validationResult } from 'express-validator';
-import { secret_access, secret_refresh, maxLengths } from '../config.js';
-import { imageConfigurator } from '../modules/imageConfigurator.js';
+import { secret_access, secret_refresh, maxLengths, access_token_lifetime } from '../config.js';
+import { imageController } from '../modules/imageController.js';
 
 
 function createTokens(data) {
-    const accessToken = jwt.sign(data, secret_access, { expiresIn: '24h' });
-    const refreshToken = jwt.sign(data, secret_refresh, { expiresIn: '30d' });
+    const accessToken = jwt.sign(data, secret_access, { expiresIn: access_token_lifetime });
+    const refreshToken = jwt.sign(data, secret_refresh);
     return { accessToken, refreshToken };
 }
 
 export class userController {
     static async login(req, res) {
         try {
-            const errors = validationResult(req)
-
+            const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                // return res.status(400).json({ message: "Username length must be between 4 and 16 characters.\nPassword length must be between 8 and 24 characters." });
                 return res.status(400).json({ message: "Check your data." });
             }
 
@@ -48,7 +46,7 @@ export class userController {
 
     static async registration(req, res) {
         try {
-            const errors = validationResult(req)
+            const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({
                     message:
@@ -57,24 +55,30 @@ export class userController {
             }
 
             const { username, password } = req.body;
-            const response = await connection.query(`SELECT id FROM users WHERE username='${username}'`);
-            const userId = response.rows[0]?.id;
+
+            let response = await connection.query(
+                `SELECT id FROM users WHERE username='${username}'`
+            );
+
+            let userId = response.rows[0]?.id;
 
             if (userId) {
                 return res.status(400).json({ message: "Account with this username already exists." });
             }
 
-            const avatarUrl = imageConfigurator.createDefaultAvatar(username);
+            const avatarUrl = imageController.createDefaultAvatar(username);
+            const hashedPassword = bcrypt.hashSync(password, 8);
 
-            // const newUser = {};
+            response = await connection.query(
+                `INSERT INTO 
+                    users (username, password, avatar_url) 
+                        VALUES ('${username}', '${hashedPassword}', '${avatarUrl}') RETURNING id`
+            );
 
+            userId = response.rows[0].id;
+            const tokens = createTokens({ userId });
 
-            // if (!bcrypt.compareSync(password, hashedPassword)) {
-            //     return res.status(403).json({ message: "Incorrect password" });
-            // }
-
-            // const tokens = createTokens({ userId });
-            return res.json({ message: 'Avatar was created!' });
+            return res.json({ ...tokens });
         } catch (error) {
             console.log(error);
             return res.status(400).json({ message: "Registration Error" });
