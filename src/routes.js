@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { userController } from "./database/userController.js";
+import { authController } from "./database/authController.js";
 import { body } from "express-validator";
 import { maxLengths } from "./config.js";
 
@@ -20,15 +20,17 @@ const router = Router();
 // router.get('/user/likes', null); // USER LIKES BY PAGE AND LIMIT | AUTH ONLY
 // router.post('/user/avatar', null); // UPLOAD USER AVATAR | AUTH ONLY
 
-router.post('/login',
+router.post('/auth/login',
     [body('username').notEmpty(),
     body('password').notEmpty()],
-    userController.login); // USER LOGIN
+    authController.login); // USER LOGIN
 
-router.post('/registration',
+router.post('/auth/registration',
     [body('username').notEmpty().isLength({ min: maxLengths.username.min, max: maxLengths.username.max }),
     body('password').notEmpty().isLength({ min: maxLengths.password.min, max: maxLengths.password.max })],
-    userController.registration); // USER REGISTRATION
+    authController.registration); // USER REGISTRATION
+
+router.get('/auth/refresh', authController.refresh); // REFRESH TOKENS
 
 
 export default router;

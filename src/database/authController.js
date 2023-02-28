@@ -2,17 +2,17 @@ import connection from './connection.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { validationResult } from 'express-validator';
-import { secret_access, secret_refresh, maxLengths, access_token_lifetime } from '../config.js';
+import { secret_access, secret_refresh, maxLengths, access_token_lifetime, refresh_token_lifetime } from '../config.js';
 import { imageController } from '../modules/imageController.js';
 
 
 function createTokens(data) {
     const accessToken = jwt.sign(data, secret_access, { expiresIn: access_token_lifetime });
-    const refreshToken = jwt.sign(data, secret_refresh);
+    const refreshToken = jwt.sign(data, secret_refresh, { expiresIn: refresh_token_lifetime });
     return { accessToken, refreshToken };
 }
 
-export class userController {
+export class authController {
     static async login(req, res) {
         try {
             const errors = validationResult(req);
@@ -82,6 +82,14 @@ export class userController {
         } catch (error) {
             console.log(error);
             return res.status(400).json({ message: "Registration Error" });
+        }
+    }
+
+    static async refresh(req, res) {
+        try {
+
+        } catch (error) {
+
         }
     }
 }

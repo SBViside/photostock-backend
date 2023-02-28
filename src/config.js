@@ -2,6 +2,7 @@
 export const secret_access = 'MYACCESS';
 export const secret_refresh = 'MYREFRESH';
 export const access_token_lifetime = '24h';
+export const refresh_token_lifetime = '30d';
 
 // MIN AND MAX LENGTH FOR VALIDATION
 export const maxLengths = {
