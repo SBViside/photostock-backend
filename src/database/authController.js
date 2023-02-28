@@ -37,7 +37,9 @@ export class authController {
             }
 
             const tokens = createTokens({ userId });
-            return res.json({ ...tokens });
+            res.cookie('refreshToken', tokens.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
+
+            return res.json({ accessToken: tokens.accessToken });
         } catch (error) {
             console.log(error);
             return res.status(400).json({ message: "Login Error" });
@@ -76,9 +78,11 @@ export class authController {
             );
 
             userId = response.rows[0].id;
-            const tokens = createTokens({ userId });
 
-            return res.json({ ...tokens });
+            const tokens = createTokens({ userId });
+            res.cookie('refreshToken', tokens.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
+
+            return res.json({ accessToken: tokens.accessToken });
         } catch (error) {
             console.log(error);
             return res.status(400).json({ message: "Registration Error" });
@@ -87,9 +91,25 @@ export class authController {
 
     static async refresh(req, res) {
         try {
+            // const refreshToken = req.cookie.refreshToken;
+
+            // if (!refreshToken) {
+            //     return res.status(401).json({ message: 'Authorization Error' })
+            // }
+
+
 
         } catch (error) {
 
+        }
+    }
+
+    static async logout(req, res) {
+        try {
+
+        } catch (error) {
+            console.log(error);
+            return res.status(400).json({ message: "Logout Error" });
         }
     }
 }

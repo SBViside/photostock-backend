@@ -13,6 +13,12 @@ CREATE TABLE users (
   role_id INTEGER NOT NULL REFERENCES roles(id) DEFAULT 1
 );
 
+CREATE TABLE tokens (
+  user_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
+  token VARCHAR(25) NOT NULL,
+  PRIMARY KEY (user_id)
+)
+
 CREATE TABLE images (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES users(id),
