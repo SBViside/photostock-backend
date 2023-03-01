@@ -11,19 +11,17 @@ export default class userDatabase {
             );
             return response.rows[0]?.id;
         } catch (error) {
-            console.log(error);
             return false;
         }
     }
 
-    static async exists(username) {
+    static async getId(username) {
         try {
             const response = await connection.query(
                 `SELECT id FROM users WHERE username='${username}'`
             );
-            return !!response.rows.length;
+            return response.rows[0]?.id;
         } catch (error) {
-            console.log(error);
             return false;
         }
     }

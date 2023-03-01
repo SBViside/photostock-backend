@@ -30,6 +30,7 @@ router.post('/registration',
     authController.registration); // USER REGISTRATION
 
 router.get('/refresh', authController.refresh); // REFRESH TOKENS
+router.post('/logout', authController.logout); // LOGOUT
 
 
 export default router;
