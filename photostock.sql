@@ -17,7 +17,7 @@ CREATE TABLE tokens (
   user_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
   token VARCHAR(25) NOT NULL,
   PRIMARY KEY (user_id)
-)
+);
 
 CREATE TABLE images (
   id SERIAL PRIMARY KEY,

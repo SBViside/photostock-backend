@@ -1,15 +1,14 @@
 import sharp from 'sharp';
-import { avatar_size } from '../config.js';
 
 const getRandom = (min, max) => {
     const id = min - 0.5 + Math.random() * (max - min + 1);
     return Math.round(id);
 }
 
-export class imageController {
+export default class imageService {
     static createDefaultAvatar(username) {
         const letters = username.slice(0, 2).toUpperCase();
-        const size = avatar_size;
+        const size = parseInt(process.env.AVATAR_SIZE);
 
         const avatar = sharp({
             create: {

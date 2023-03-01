@@ -1,7 +1,6 @@
 import { Router } from "express";
-import { authController } from "./database/authController.js";
+import { authController } from "./controllers/authController.js";
 import { body } from "express-validator";
-import { maxLengths } from "./config.js";
 
 const router = Router();
 
@@ -20,17 +19,17 @@ const router = Router();
 // router.get('/user/likes', null); // USER LIKES BY PAGE AND LIMIT | AUTH ONLY
 // router.post('/user/avatar', null); // UPLOAD USER AVATAR | AUTH ONLY
 
-router.post('/auth/login',
+router.post('/login',
     [body('username').notEmpty(),
     body('password').notEmpty()],
     authController.login); // USER LOGIN
 
-router.post('/auth/registration',
-    [body('username').notEmpty().isLength({ min: maxLengths.username.min, max: maxLengths.username.max }),
-    body('password').notEmpty().isLength({ min: maxLengths.password.min, max: maxLengths.password.max })],
+router.post('/registration',
+    [body('username').notEmpty().isLength({ min: process.env.USERNAME_MIN_LENGTH, max: process.env.USERNAME_MAX_LENGTH }),
+    body('password').notEmpty().isLength({ min: process.env.PASSWORD_MIN_LENGTH, max: process.env.PASSWORD_MAX_LENGTH })],
     authController.registration); // USER REGISTRATION
 
-router.get('/auth/refresh', authController.refresh); // REFRESH TOKENS
+router.get('/refresh', authController.refresh); // REFRESH TOKENS
 
 
 export default router;
