@@ -61,16 +61,15 @@ export class authController {
                 return res.status(401).json({ message: "Authorization Error" });
             }
 
-            const userId = await tokenService.verifyRefreshToken(userRefreshToken)
+            const userId = await tokenService.verifyRefreshToken(userRefreshToken);
             if (!userId) {
-                return res.status(401).json({ message: "Refresh Token is invalid" });
+                return res.status(401).json({ message: "Refresh Token Is Invalid" });
             }
 
             const { accessToken, refreshToken } = await tokenService.createTokens(userId, { userId });
             res.cookie('refreshToken', refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
             return res.json({ accessToken });
         } catch (error) {
-            console.log(error);
             return res.status(400).json({ message: "Token Refresh Error" });
         }
     }

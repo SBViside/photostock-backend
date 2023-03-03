@@ -10,14 +10,24 @@ export default class tokenDatabase {
         }
     }
 
-    static async delete(userId) {
+    static async deleteByUser(userId) {
         try {
             const exists = await this.existsByUser(userId);
             if (!exists) throw new Error();
             await connection.query(`DELETE FROM tokens WHERE user_id=${userId}`);
             return true;
         } catch (error) {
-            console.log(error);
+            return false;
+        }
+    }
+
+    static async deleteByToken(token) {
+        try {
+            const exists = await this.existsByToken(token);
+            if (!exists) throw new Error();
+            await connection.query(`DELETE FROM tokens WHERE token='${token}'`);
+            return true;
+        } catch (error) {
             return false;
         }
     }
