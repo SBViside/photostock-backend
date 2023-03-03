@@ -15,10 +15,10 @@ export class authController {
             const userId = await userDatabase.getId(username);
 
             if (!userId) {
-                return res.status(403).json({ message: "Incorrect username" });
+                return res.status(401).json({ message: "Incorrect username" });
             }
             if (!await userDatabase.comparePasswords(username, password)) {
-                return res.status(403).json({ message: "Incorrect password" });
+                return res.status(401).json({ message: "Incorrect password" });
             }
 
             const { accessToken, refreshToken } = await tokenService.createTokens(userId, { userId });
@@ -40,8 +40,8 @@ export class authController {
 
             const { username, password } = req.body;
 
-            if (await userDatabase.exists(username)) {
-                return res.status(400).json({ message: "Account with this username already exists." });
+            if (await userDatabase.getId(username)) {
+                return res.status(401).json({ message: "Account with this username already exists." });
             }
             const avatarUrl = imageService.createDefaultAvatar(username);
             const userId = await userDatabase.insert({ username, avatarUrl, password });
