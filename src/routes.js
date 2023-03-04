@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { authController } from "./controllers/authController.js";
 import { body } from "express-validator";
+import { authOnlyMiddleware } from "./middlewares/authOnlyMiddleware.js";
+import userController from "./controllers/userController.js";
 
 const router = Router();
 
@@ -15,7 +17,7 @@ const router = Router();
 
 // router.post('/like/:id', null) // SET LIKE FOR THE IMAGE | AUTH ONLY
 
-// router.get('/user', null); // USER INFO | AUTH ONLY
+router.get('/user', [authOnlyMiddleware], userController.getInfo); // USER INFO | AUTH ONLY
 // router.get('/user/likes', null); // USER LIKES BY PAGE AND LIMIT | AUTH ONLY
 // router.post('/user/avatar', null); // UPLOAD USER AVATAR | AUTH ONLY
 
@@ -29,8 +31,8 @@ router.post('/registration',
     body('password').notEmpty().isLength({ min: process.env.PASSWORD_MIN_LENGTH, max: process.env.PASSWORD_MAX_LENGTH })],
     authController.registration); // USER REGISTRATION
 
-router.get('/refresh', authController.refresh); // REFRESH TOKENS
-router.post('/logout', authController.logout); // LOGOUT
+router.get('/refresh', [authOnlyMiddleware], authController.refresh); // REFRESH TOKENS
+router.get('/logout', [authOnlyMiddleware], authController.logout); // LOGOUT
 
 
 export default router;

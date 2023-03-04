@@ -26,6 +26,19 @@ export default class userDatabase {
         }
     }
 
+    static async select(userId) {
+        try {
+            const response = await connection.query(
+                `SELECT users.id, users.username, users.created_at, users.avatar_url, roles.name 
+                    FROM users INNER JOIN roles ON users.role_id=roles.id 
+                        WHERE users.id=${userId}`
+            );
+            return response.rows[0];
+        } catch (error) {
+            return false;
+        }
+    }
+
     static async comparePasswords(username, password) {
         try {
             const response = await connection.query(

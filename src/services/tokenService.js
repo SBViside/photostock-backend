@@ -29,8 +29,8 @@ export default class tokenService {
 
     static async logout(refreshToken) {
         try {
-
             await tokenDatabase.deleteByToken(refreshToken);
+
         } catch (error) {
             return false;
         }
