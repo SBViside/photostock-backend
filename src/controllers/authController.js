@@ -6,6 +6,7 @@ import userDatabase from '../database/userDatabase.js';
 export class authController {
     static async login(req, res) {
         try {
+            // VALIDATION
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({ message: "Check your data." });
@@ -31,6 +32,7 @@ export class authController {
 
     static async registration(req, res) {
         try {
+            // VALIDATION
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({

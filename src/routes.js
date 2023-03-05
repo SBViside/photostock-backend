@@ -1,25 +1,30 @@
 import { Router } from "express";
 import { authController } from "./controllers/authController.js";
-import { body } from "express-validator";
+import { body, check } from "express-validator";
 import { authOnlyMiddleware } from "./middlewares/authOnlyMiddleware.js";
 import userController from "./controllers/userController.js";
+import imageController from "./controllers/imageController.js";
+import { httpFileExists, httpFileIsImage } from "./modules/validation.js";
 
 const router = Router();
 
+router.get('/images/tags', imageController.tags); // IMAGE TAGS BY SIGNATURE
 
-// router.get('/categories', null); // IMAGE CATEGORIES
-
-// router.get('/images', null); // GET LATEST IMAGES BY PAGE AND LIMIT
+// router.get('/images', null); // GET LATEST IMAGES BY PAGE 
 // router.get('/images/random', null); // GET RANDOM IMAGE (FIX)
 // router.get('/images/search', null); // SEARCH IMAGES BY TAGS OR NAME
 // router.get('/images/:id', null); // IMAGE BY ID
 // router.post('/images', null); // IMAGE CREATOR | AUTH ONLY
-
-// router.post('/like/:id', null) // SET LIKE FOR THE IMAGE | AUTH ONLY
+// router.post('/images/like/:id', null) // SET LIKE FOR THE IMAGE | AUTH ONLY
+router.get('/images/user/:id', imageController.userImages); // USER IMAGES BY PAGE
 
 router.get('/user', [authOnlyMiddleware], userController.getInfo); // USER INFO | AUTH ONLY
-// router.get('/user/likes', null); // USER LIKES BY PAGE AND LIMIT | AUTH ONLY
-// router.post('/user/avatar', null); // UPLOAD USER AVATAR | AUTH ONLY
+// router.get('/user/likes', null); // USER LIKES BY PAGE | AUTH ONLY
+router.post('/user/avatar', [authOnlyMiddleware,
+    check('avatar')
+        .custom(httpFileExists)
+        .custom(httpFileIsImage)
+], userController.uploadAvatar); // UPLOAD USER AVATAR | AUTH ONLY
 
 router.post('/login',
     [body('username').notEmpty(),
@@ -33,6 +38,5 @@ router.post('/registration',
 
 router.get('/refresh', [authOnlyMiddleware], authController.refresh); // REFRESH TOKENS
 router.get('/logout', [authOnlyMiddleware], authController.logout); // LOGOUT
-
 
 export default router;

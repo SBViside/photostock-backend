@@ -47,4 +47,25 @@ export default class imageService {
 
         return `/avatars/${username}.webp`;
     }
+
+    static createCustomAvatar(username, avatar) {
+        const size = parseInt(process.env.AVATAR_SIZE);
+
+        sharp(avatar)
+            .resize({
+                width: size,
+                height: size,
+                fit: 'cover',
+            })
+            .webp()
+            .toBuffer()
+            .then(resizedAvatar => {
+                sharp(resizedAvatar).toFile(`src/public/avatars/${username}.webp`)
+            })
+            .catch((error) => {
+                console.log("Avatar saving error:", error);
+            });
+
+        return `/avatars/${username}.webp`;
+    }
 }
