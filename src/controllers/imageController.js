@@ -1,4 +1,6 @@
+import jwt from 'jsonwebtoken';
 import imageDatabase from "../database/imageDatabase.js";
+import { likeDatabase } from '../database/likeDatabase.js';
 import userDatabase from "../database/userDatabase.js";
 
 export default class imageController {
@@ -14,17 +16,20 @@ export default class imageController {
         }
     }
 
-    static async setLike(req, res) {
+    static async toggleLike(req, res) {
         try {
             const accessToken = req.headers.authorization.split(' ')[1];
             const { userId } = jwt.verify(accessToken, process.env.JWT_SECRET_ACCESS);
             const { id: imageId } = req.params;
 
-            const liked = await imageDatabase.insertLike(userId, imageId);
-            if (!liked) throw new Error();
+            const isLiked = await likeDatabase.isLiked(userId, imageId);
 
-            res.json({ message: "Successfully Liked" });
+            const changed = isLiked ? await likeDatabase.deleteLike(userId, imageId) : await likeDatabase.insertLike(userId, imageId);
+            if (!changed) throw new Error();
+
+            res.json({ message: "Successfully Changed" });
         } catch (error) {
+
             res.status(400).json({ message: "Set Like Error" });
         }
     }
@@ -44,13 +49,14 @@ export default class imageController {
 
     static async randomImage(req, res) {
         try {
-            const { _tag_id } = req.query;
+            const { tag_id } = req.query;
 
-            const imageInfo = await imageDatabase.selectRandom(_tag_id);
+            const imageInfo = await imageDatabase.selectRandom(tag_id);
             if (!imageInfo) throw new Error();
 
             res.json(imageInfo);
         } catch (error) {
+
             res.status(400).json({ message: "Get Random Image Error" });
         }
     }

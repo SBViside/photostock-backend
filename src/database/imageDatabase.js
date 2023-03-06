@@ -18,13 +18,14 @@ export default class imageDatabase {
         try {
             const response = await connection.query(
                 `SELECT images.id FROM images 
-                ${tag_id ? ` INNER JOIN image_tags ON image_tags.image_id=image.id WHERE image_tags.tag_id=${tag_id} ` : ''} 
+                ${tag_id ? ` INNER JOIN image_tags ON image_tags.image_id=images.id WHERE image_tags.tag_id=${tag_id} ` : ''} 
                 ORDER BY id
             `);
             const randomId = response.rows[getRandom(0, response.rows.length - 1)].id;
             const image = await this.select(randomId);
             return image;
         } catch (error) {
+            console.log(error);
             return false;
         }
     }
@@ -32,10 +33,11 @@ export default class imageDatabase {
     static async select(imageId) {
         try {
             const imageResponse = await connection.query(
-                `SELECT id, title, url_webp_preview, url_webp_full, url_full, url_medium, 
-                url_small, size_full, size_medium, size_small, created_at, user_id
+                `SELECT id, title, url_webp_preview, url_webp_full, 
+                url_full, url_medium, url_small, size_full, size_medium, size_small, created_at, user_id, 
+                (SELECT COUNT(likes.image_id) FROM likes WHERE image_id=${imageId}) as likes
                     FROM images 
-                    WHERE id=${imageId}`);
+                    WHERE images.id=${imageId}`);
 
             const tagsResponse = await connection.query(
                 `SELECT ARRAY_AGG(tags.name) as tag_names
@@ -45,14 +47,13 @@ export default class imageDatabase {
                     WHERE image_tags.image_id=${imageId}
                     GROUP BY image_tags.image_id`);
 
-            const userId = data.rows[0].user_id;
-            const author = await userDatabase.select(userId)
+            const userId = imageResponse.rows[0].user_id;
 
             const image = imageResponse.rows[0];
-            delete image.user_id;
             const tags = tagsResponse.rows[0].tag_names;
+            const author = await userDatabase.select(userId)
 
-            return { data: data.rows[0], tags: tags.rows[0].tag_names, author };
+            return { image, tags, author };
         } catch (error) {
             console.log(error);
             return false;
@@ -61,18 +62,15 @@ export default class imageDatabase {
 
     static async selectUserImages(userId, page) {
         try {
+            const limit = process.env.IMAGES_LIMIT;
+
             const response = await connection.query(
-                `SELECT images.id, images.title, images.url_webp_preview, images.url_webp_full, images.url_full, images.url_medium,
-                 images.url_small, images.size_full, images.size_medium, images.size_small, images.created_at, 
-                 (SELECT tags.name 
-                        FROM image_tags 
-                        INNER JOIN tags 
-                        ON tags.id=image_tags.tag_id 
-                        WHERE image_tags.image_id=images.id)
+                `SELECT id, title, url_webp_preview, url_webp_full, url_full, url_medium,
+                 url_small, size_full, size_medium, size_small, created_at 
                     FROM images 
                     WHERE user_id=${userId} 
                     ORDER BY created_at DESC
-                    LIMIT ${process.env.IMAGES_LIMIT} OFFSET ${page}`
+                    LIMIT ${limit} OFFSET ${(limit * page) - limit}`
             );
             return response.rows;
         } catch (error) {
@@ -82,6 +80,8 @@ export default class imageDatabase {
 
     static async selectLikedImages(userId, page) {
         try {
+            const limit = process.env.IMAGES_LIMIT;
+
             const response = await connection.query(
                 `SELECT images.id, images.title, images.url_webp_preview, images.url_webp_full, images.url_full, images.url_medium,
                      images.url_small, images.size_full, images.size_medium, images.size_small, images.created_at, 
@@ -94,21 +94,10 @@ export default class imageDatabase {
                         INNER JOIN likes ON likes.image_id=images.id
                         WHERE likes.user_id=${userId} 
                         ORDER BY likes.created_at DESC
-                        LIMIT ${process.env.IMAGES_LIMIT} OFFSET ${page}`
+                        LIMIT ${limit} OFFSET ${(limit * page) - limit}`
             );
 
             return response.rows;
-        } catch (error) {
-            return false;
-        }
-    }
-
-    static async insertLike(userId, imageId) {
-        try {
-            const response = await connection.query(
-                `INSERT INTO likes (user_id, image_id) VALUES (${userId}, ${imageId})`
-            );
-            return true;
         } catch (error) {
             return false;
         }

@@ -49,4 +49,5 @@ CREATE TABLE likes (
   user_id INTEGER NOT NULL REFERENCES users(id),
   image_id INTEGER NOT NULL REFERENCES images(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  CONSTRAINT user_id_image_id UNIQUE (user_id, image_id)
 );
