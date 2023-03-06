@@ -6,10 +6,7 @@ export default class imageController {
             const { _signature } = req.query;
             const tags = await imageDatabase.getTagsBySignature(_signature);
 
-            if (!tags) {
-                throw new Error();
-            }
-
+            if (!tags) throw new Error();
             res.json(tags);
         } catch (error) {
             res.status(400).json({ message: "Reqest Error" });
@@ -22,9 +19,7 @@ export default class imageController {
             const page = req.query._page || 1;
 
             const userImages = await imageDatabase.getUserImages(userId, page);
-            if (!userImages) {
-                throw new Error();
-            }
+            if (!userImages) throw new Error();
 
             res.json(userImages);
         } catch (error) {

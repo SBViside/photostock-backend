@@ -19,7 +19,7 @@ router.get('/images/tags', imageController.tags); // REVIEW IMAGE TAGS BY SIGNAT
 router.get('/images/user/:id', imageController.userImages); // USER IMAGES BY PAGE
 
 router.get('/user', [authOnlyMiddleware], userController.getInfo); // REVIEW USER INFO | AUTH ONLY
-// router.get('/user/likes', null); // FIXME USER LIKES BY PAGE | AUTH ONLY
+router.get('/user/likes', [authOnlyMiddleware], userController.likedImages); // REVIEW USER LIKES BY PAGE | AUTH ONLY
 router.post('/user/avatar', [authOnlyMiddleware,
     check('avatar')
         .custom(httpFileExists)

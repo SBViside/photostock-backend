@@ -33,21 +33,9 @@ CREATE TABLE images (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE categories (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(50) NOT NULL UNIQUE,
-  description VARCHAR(255)
-);
-
 CREATE TABLE tags (
   id SERIAL PRIMARY KEY,
   name VARCHAR(50) NOT NULL UNIQUE
-);
-
-CREATE TABLE image_categories (
-  image_id INTEGER NOT NULL REFERENCES images(id),
-  category_id INTEGER NOT NULL REFERENCES categories(id),
-  PRIMARY KEY (image_id, category_id)
 );
 
 CREATE TABLE image_tags (

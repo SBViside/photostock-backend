@@ -23,8 +23,12 @@ export default class userController {
         try {
             const accessToken = req.headers.authorization.split(' ')[1];
             const { userId } = jwt.verify(accessToken, process.env.JWT_SECRET_ACCESS);
+            const page = req.query._page || 1;
 
+            const liked = await imageDatabase.getUserImages(userId, page);
+            if (!liked) throw new Error();
 
+            res.json(liked);
         } catch (error) {
             res.status(400).json({ message: "Get Liked Images Error" });
         }
