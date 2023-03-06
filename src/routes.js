@@ -11,15 +11,14 @@ const router = Router();
 router.get('/images/tags', imageController.tags); // REVIEW IMAGE TAGS BY SIGNATURE
 
 // router.get('/images', null); // FIXME GET LATEST IMAGES BY PAGE 
-// router.get('/images/random', null); // FIXME GET RANDOM IMAGE (FIX)
-// router.get('/images/search', null); // FIXME SEARCH IMAGES BY TAGS OR NAME
-// router.get('/images/:id', null); // FIXME IMAGE BY ID
 // router.post('/images', null); // FIXME IMAGE CREATOR | AUTH ONLY
-// router.post('/images/like/:id', null) // FIXME SET LIKE FOR THE IMAGE | AUTH ONLY
-router.get('/images/user/:id', imageController.userImages); // USER IMAGES BY PAGE
+router.get('/images/random', imageController.randomImage); // NOTE GET RANDOM IMAGE (FIX)
+router.get('/images/:id', imageController.singleImage); // NOTE IMAGE BY ID
+router.post('/images/like/:id', [authOnlyMiddleware], imageController.setLike) // NOTE SET LIKE FOR THE IMAGE | AUTH ONLY
+router.get('/images/user/:id', imageController.userImages); // NOTE USER IMAGES BY PAGE
 
 router.get('/user', [authOnlyMiddleware], userController.getInfo); // REVIEW USER INFO | AUTH ONLY
-router.get('/user/likes', [authOnlyMiddleware], userController.likedImages); // REVIEW USER LIKES BY PAGE | AUTH ONLY
+router.get('/user/likes', [authOnlyMiddleware], userController.likedImages); // NOTE USER LIKES BY PAGE | AUTH ONLY
 router.post('/user/avatar', [authOnlyMiddleware,
     check('avatar')
         .custom(httpFileExists)

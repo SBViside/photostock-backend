@@ -29,7 +29,7 @@ export default class userDatabase {
     static async select(userId) {
         try {
             const response = await connection.query(
-                `SELECT users.id, users.username, users.created_at, users.avatar_url, roles.name 
+                `SELECT users.id, users.username, users.created_at, users.avatar_url, roles.name as ROLE 
                     FROM users INNER JOIN roles ON users.role_id=roles.id 
                         WHERE users.id=${userId}`
             );

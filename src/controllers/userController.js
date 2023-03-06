@@ -25,7 +25,7 @@ export default class userController {
             const { userId } = jwt.verify(accessToken, process.env.JWT_SECRET_ACCESS);
             const page = req.query._page || 1;
 
-            const liked = await imageDatabase.getUserImages(userId, page);
+            const liked = await imageDatabase.selectUserImages(userId, page);
             if (!liked) throw new Error();
 
             res.json(liked);
