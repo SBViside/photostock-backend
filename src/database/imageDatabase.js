@@ -3,6 +3,18 @@ import connection from "./connection.js";
 import userDatabase from "./userDatabase.js";
 
 export default class imageDatabase {
+    static async insert(imageData) {
+        try {
+            const response = await connection.query(`INSERT INTO images (user_id, title, url_webp_preview, 
+                url_webp_full, url_full, url_medium, url_small, size_full, size_medium, size_small)
+                VALUES (...)
+                `);
+            return response.rows;
+        } catch (error) {
+            return false;
+        }
+    }
+
     static async selectTagsBySignature(signature) {
         try {
             const response = await connection.query(`SELECT * FROM tags 

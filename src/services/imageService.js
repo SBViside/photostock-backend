@@ -1,5 +1,6 @@
 import sharp from 'sharp';
-import { getRandom } from '../modules/utils.js';
+import { v4 } from 'uuid';
+import { bytesToMegabytes, getRandom } from '../modules/utils.js';
 
 export default class imageService {
     static createDefaultAvatar(username) {
@@ -63,5 +64,42 @@ export default class imageService {
             });
 
         return `/avatars/${username}.webp`;
+    }
+
+    static async handleNewImage(image) {
+        const sizes = {
+            full: bytesToMegabytes(image.size),
+            middle: bytesToMegabytes(image.size * 0.7),
+            small: bytesToMegabytes(image.size * 0.4),
+        };
+
+        const randomName = v4();
+        const pathes = {
+            full: `src/public/images/${randomName}_100.jpeg`,
+            middle: `src/public/images/${randomName}_70.jpeg`,
+            small: `src/public/images/${randomName}_40.jpeg`,
+        };
+
+        // DEFAULT IMAGE
+        sharp(image.data)
+            .jpeg()
+            .toFile(pathes.full);
+        // DECREASED IMAGE 70%
+        sharp(image.data)
+            .resize({ width: '70%' })
+            .jpeg()
+            .toFile(pathes.middle, (err, info) => {
+                console.log(info);
+            });
+        // DECREASED IMAGE 40%
+        sharp(image.data)
+            .resize({ width: '40%' })
+            .jpeg()
+            .toFile(pathes.small, (err, info) => {
+                console.log(info);
+            });
+
+
+        return false;
     }
 }

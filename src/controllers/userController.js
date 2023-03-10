@@ -48,8 +48,8 @@ export default class userController {
             const { username } = await userDatabase.select(userId);
             if (!username) throw new Error();
 
-            const { avatar } = req.files;
-            imageService.createCustomAvatar(username, avatar.data);
+            const { image } = req.files;
+            imageService.createCustomAvatar(username, image.data);
 
             res.json({ message: "Avatar was successfully updated" });
         } catch (error) {

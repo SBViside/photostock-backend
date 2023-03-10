@@ -11,7 +11,11 @@ const router = Router();
 router.get('/images/tags', imageController.tags); // REVIEW IMAGE TAGS BY SIGNATURE
 
 // router.get('/images', null); // FIXME GET LATEST IMAGES BY PAGE 
-// router.post('/images', null); // FIXME IMAGE CREATOR | AUTH ONLY
+router.post('/images', [authOnlyMiddleware,
+    check('image')
+        .custom(httpFileExists)
+        .custom(httpFileIsImage)
+], imageController.postImage); // FIXME IMAGE CREATOR | AUTH ONLY
 router.get('/images/random', imageController.randomImage); // REVIEW GET RANDOM IMAGE
 router.get('/images/:id', imageController.singleImage); // REVIEW IMAGE BY ID
 router.post('/images/like/:id', [authOnlyMiddleware], imageController.toggleLike) // REVIEW SET LIKE FOR THE IMAGE | AUTH ONLY
@@ -20,7 +24,7 @@ router.get('/images/user/:id', imageController.userImages); // NOTE USER IMAGES 
 router.get('/user', [authOnlyMiddleware], userController.getInfo); // REVIEW USER INFO | AUTH ONLY
 router.get('/user/likes', [authOnlyMiddleware], userController.likedImages); // FIXME USER LIKES BY PAGE | AUTH ONLY
 router.post('/user/avatar', [authOnlyMiddleware,
-    check('avatar')
+    check('image')
         .custom(httpFileExists)
         .custom(httpFileIsImage)
 ], userController.uploadAvatar); // REVIEW UPLOAD USER AVATAR | AUTH ONLY

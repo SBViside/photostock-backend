@@ -2,8 +2,30 @@ import jwt from 'jsonwebtoken';
 import imageDatabase from "../database/imageDatabase.js";
 import { likeDatabase } from '../database/likeDatabase.js';
 import userDatabase from "../database/userDatabase.js";
+import imageService from '../services/imageService.js';
 
 export default class imageController {
+    static async postImage(req, res) {
+        try {
+            const accessToken = req.headers?.authorization?.split(' ')[1];
+
+            const { userId } = jwt.verify(accessToken, process.env.JWT_SECRET_ACCESS);
+            const { title } = req.body;
+            const { image } = req.files;
+
+            image.userId = userId;
+            image.title = title;
+
+            const newImage = await imageService.handleNewImage(image);
+
+            if (!newImage) throw new Error();
+            res.json(newImage);
+        } catch (error) {
+            console.log(error);
+            res.status(400).json({ message: "Upload Image Error" });
+        }
+    }
+
     static async tags(req, res) {
         try {
             const { _signature } = req.query;
