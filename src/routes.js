@@ -15,7 +15,7 @@ router.post('/images', [authOnlyMiddleware,
     check('image')
         .custom(httpFileExists)
         .custom(httpFileIsImage)
-], imageController.postImage); // FIXME IMAGE CREATOR | AUTH ONLY
+], imageController.postImage); // REVIEW IMAGE CREATOR | AUTH ONLY
 router.get('/images/random', imageController.randomImage); // REVIEW GET RANDOM IMAGE
 router.get('/images/:id', imageController.singleImage); // REVIEW IMAGE BY ID
 router.post('/images/like/:id', [authOnlyMiddleware], imageController.toggleLike) // REVIEW SET LIKE FOR THE IMAGE | AUTH ONLY
