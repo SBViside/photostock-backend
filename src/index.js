@@ -3,7 +3,7 @@ dotenv.config();
 import Express from 'express';
 import router from './routes.js';
 import cookieParser from 'cookie-parser';
-import { __dirname } from './modules/path.js';
+import { __dirname } from './path.js';
 import fileUpload from 'express-fileupload';
 
 const PORT = process.env.PORT || 5999;

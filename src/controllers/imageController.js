@@ -1,22 +1,28 @@
 import jwt from 'jsonwebtoken';
+import { validationResult } from 'express-validator';
 import imageDatabase from "../database/imageDatabase.js";
 import { likeDatabase } from '../database/likeDatabase.js';
 import userDatabase from "../database/userDatabase.js";
 import imageService from '../services/imageService.js';
+import { tagDatabase } from '../database/tagDatabase.js';
 
 export default class imageController {
     static async postImage(req, res) {
         try {
+            // VALIDATION
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json(errors.errors);
+            }
+
             const accessToken = req.headers?.authorization?.split(' ')[1];
 
             const { userId } = jwt.verify(accessToken, process.env.JWT_SECRET_ACCESS);
-            const { title } = req.body;
+            const { title, tags } = req.body;
             const { image } = req.files;
 
-            image.userId = userId;
-            image.title = title;
-
-            const newImage = await imageService.handleNewImage(image);
+            const { pathes, webpPathes } = await imageService.handleNewImage(image);
+            const newImage = await imageDatabase.insert({ userId, title, tags, pathes, webpPathes });
 
             if (!newImage) throw new Error();
             res.json(newImage);
@@ -29,7 +35,7 @@ export default class imageController {
     static async tags(req, res) {
         try {
             const { _signature } = req.query;
-            const tags = await imageDatabase.selectTagsBySignature(_signature);
+            const tags = await tagDatabase.selectTagsBySignature(_signature);
 
             if (!tags) throw new Error();
             res.json(tags);

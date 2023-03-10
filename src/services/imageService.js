@@ -1,6 +1,6 @@
 import sharp from 'sharp';
 import { v4 } from 'uuid';
-import { bytesToMegabytes, getRandom } from '../modules/utils.js';
+import { getRandom } from '../modules/utils.js';
 
 export default class imageService {
     static createDefaultAvatar(username) {
@@ -67,39 +67,38 @@ export default class imageService {
     }
 
     static async handleNewImage(image) {
-        const sizes = {
-            full: bytesToMegabytes(image.size),
-            middle: bytesToMegabytes(image.size * 0.7),
-            small: bytesToMegabytes(image.size * 0.4),
-        };
-
+        const imageBuffer = image.data;
+        const middleSize = parseInt(process.env.IMAGE_MIDDLE_SIZE);
+        const smallSize = parseInt(process.env.IMAGE_SMALL_SIZE);
         const randomName = v4();
+
         const pathes = {
-            full: `src/public/images/${randomName}_100.jpeg`,
-            middle: `src/public/images/${randomName}_70.jpeg`,
-            small: `src/public/images/${randomName}_40.jpeg`,
+            full: `/images/${randomName}_100.png`,
+            middle: `/images/${randomName}_${middleSize}.png`,
+            small: `/images/${randomName}_${smallSize}.png`,
+        };
+        const webpPathes = {
+            full: `/images/${randomName}_100.webp`,
+            preview: `/images/${randomName}_${smallSize}.webp`,
         };
 
         // DEFAULT IMAGE
-        sharp(image.data)
-            .jpeg()
-            .toFile(pathes.full);
-        // DECREASED IMAGE 70%
-        sharp(image.data)
-            .resize({ width: '70%' })
-            .jpeg()
-            .toFile(pathes.middle, (err, info) => {
-                console.log(info);
-            });
-        // DECREASED IMAGE 40%
-        sharp(image.data)
-            .resize({ width: '40%' })
-            .jpeg()
-            .toFile(pathes.small, (err, info) => {
-                console.log(info);
-            });
+        sharp(imageBuffer).png().toFile('src/public' + pathes.full);
+        sharp(imageBuffer).webp().toFile('src/public' + webpPathes.full);
 
+        // MIDDLE IMAGE
+        let meta = await sharp(imageBuffer).metadata()
+        let width = Math.round(meta.width * middleSize / 100);
+        let height = Math.round(meta.height * middleSize / 100);
+        sharp(imageBuffer).resize(width, height).png().toFile('src/public' + pathes.middle);
 
-        return false;
+        // SMALL IMAGE
+        meta = await sharp(imageBuffer).metadata();
+        width = Math.round(meta.width * smallSize / 100);
+        height = Math.round(meta.height * smallSize / 100);
+        sharp(imageBuffer).resize(width, height).png().toFile('src/public' + pathes.small);
+        sharp(imageBuffer).resize(width, height).webp().toFile('src/public' + webpPathes.preview);
+
+        return { pathes, webpPathes };
     }
 }

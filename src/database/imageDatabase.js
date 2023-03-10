@@ -1,26 +1,43 @@
 import { getRandom } from "../modules/utils.js";
 import connection from "./connection.js";
+import { tagDatabase } from "./tagDatabase.js";
 import userDatabase from "./userDatabase.js";
 
 export default class imageDatabase {
     static async insert(imageData) {
         try {
-            const response = await connection.query(`INSERT INTO images (user_id, title, url_webp_preview, 
-                url_webp_full, url_full, url_medium, url_small, size_full, size_medium, size_small)
-                VALUES (...)
-                `);
-            return response.rows;
+            const title = imageData.title?.trim() || 'No title';
+
+            const response = await connection.query(`INSERT INTO images 
+                (user_id, title, url_webp_preview, url_webp_full, url_full, url_medium, url_small)
+                VALUES (${imageData.userId}, '${title}', '${imageData.webpPathes.preview}', '${imageData.webpPathes.full}',
+                '${imageData.pathes.full}', '${imageData.pathes.middle}', '${imageData.pathes.small}') RETURNING id`);
+
+            const imageId = response?.rows[0]?.id;
+            const arrayOfTags = imageData.tags.split(',');
+
+            for (let i = 0; i < arrayOfTags.length; i++) {
+                const tag = arrayOfTags[i].trim();
+                await this.insertImageTag(imageId, tag);
+            }
+
+            return await this.select(imageId);
         } catch (error) {
+            console.log(error);
             return false;
         }
     }
 
-    static async selectTagsBySignature(signature) {
+    static async insertImageTag(imageId, tag) {
         try {
-            const response = await connection.query(`SELECT * FROM tags 
-                WHERE LOWER(name) LIKE LOWER('%${signature}%') 
-                    ORDER BY name LIMIT ${process.env.TAGS_LIMIT}`);
-            return response.rows;
+            let { id: tagId } = await tagDatabase.selectByName(tag);
+            if (!tagId) {
+                tagId = await tagDatabase.insert(tag)
+            }
+            response = await connection.query(
+                `INSERT INTO image_tags (image_id, tag_id) VALUES (${imageId}, ${tagId})`
+            );
+            return true;
         } catch (error) {
             return false;
         }
@@ -46,13 +63,13 @@ export default class imageDatabase {
         try {
             const imageResponse = await connection.query(
                 `SELECT id, title, url_webp_preview, url_webp_full, 
-                url_full, url_medium, url_small, size_full, size_medium, size_small, created_at, user_id, 
+                url_full, url_medium, url_small, created_at, user_id, 
                 (SELECT COUNT(likes.image_id) FROM likes WHERE image_id=${imageId}) as likes
                     FROM images 
                     WHERE images.id=${imageId}`);
 
             const tagsResponse = await connection.query(
-                `SELECT ARRAY_AGG(tags.name) as tag_names
+                `SELECT ARRAY_AGG(tags.name) as tags_name
                     FROM image_tags 
                     INNER JOIN tags 
                     ON tags.id=image_tags.tag_id 
@@ -62,7 +79,7 @@ export default class imageDatabase {
             const userId = imageResponse.rows[0].user_id;
 
             const image = imageResponse.rows[0];
-            const tags = tagsResponse.rows[0].tag_names;
+            const tags = tagsResponse.rows[0].tags_name || [];
             const author = await userDatabase.select(userId)
 
             return { image, tags, author };
@@ -78,7 +95,7 @@ export default class imageDatabase {
 
             const response = await connection.query(
                 `SELECT id, title, url_webp_preview, url_webp_full, url_full, url_medium,
-                 url_small, size_full, size_medium, size_small, created_at 
+                 url_small, created_at 
                     FROM images 
                     WHERE user_id=${userId} 
                     ORDER BY created_at DESC
@@ -96,7 +113,7 @@ export default class imageDatabase {
 
             const response = await connection.query(
                 `SELECT images.id, images.title, images.url_webp_preview, images.url_webp_full, images.url_full, images.url_medium,
-                     images.url_small, images.size_full, images.size_medium, images.size_small, images.created_at, 
+                     images.url_small, images.created_at, 
                      (SELECT tags.name 
                             FROM image_tags 
                             INNER JOIN tags 
