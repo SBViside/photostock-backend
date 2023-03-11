@@ -69,7 +69,7 @@ export default class imageDatabase {
                     WHERE images.id=${imageId}`);
 
             const tagsResponse = await connection.query(
-                `SELECT ARRAY_AGG(tags.name) as tags_name
+                `SELECT ARRAY_AGG(tags.name) as tags
                     FROM image_tags 
                     INNER JOIN tags 
                     ON tags.id=image_tags.tag_id 
@@ -79,7 +79,7 @@ export default class imageDatabase {
             const userId = imageResponse.rows[0].user_id;
 
             const image = imageResponse.rows[0];
-            const tags = tagsResponse.rows[0].tags_name || [];
+            const tags = tagsResponse.rows[0].tags || [];
             const author = await userDatabase.select(userId)
 
             return { image, tags, author };
@@ -94,15 +94,22 @@ export default class imageDatabase {
             const limit = process.env.IMAGES_LIMIT;
 
             const response = await connection.query(
-                `SELECT id, title, url_webp_preview, url_webp_full, url_full, url_medium,
-                 url_small, created_at 
+                `SELECT images.id, images.title, images.url_webp_preview, images.url_webp_full, images.url_full, images.url_medium, images.url_small, images.created_at, users.username AS author, users.avatar_url AS author_url, 
+                (SELECT COUNT(likes.image_id) FROM likes WHERE image_id=images.id) AS likes,
+                (SELECT ARRAY_AGG(tags.name) 
+                        FROM image_tags 
+                        INNER JOIN tags 
+                        ON tags.id=image_tags.tag_id 
+                        WHERE image_tags.image_id=images.id) AS tags
                     FROM images 
-                    WHERE user_id=${userId} 
-                    ORDER BY created_at DESC
+                    INNER JOIN users ON users.id=images.user_id
+                    WHERE images.user_id=${userId} 
+                    ORDER BY images.created_at DESC
                     LIMIT ${limit} OFFSET ${(limit * page) - limit}`
             );
             return response.rows;
         } catch (error) {
+            console.log(error);
             return false;
         }
     }
@@ -112,15 +119,16 @@ export default class imageDatabase {
             const limit = process.env.IMAGES_LIMIT;
 
             const response = await connection.query(
-                `SELECT images.id, images.title, images.url_webp_preview, images.url_webp_full, images.url_full, images.url_medium,
-                     images.url_small, images.created_at, 
-                     (SELECT tags.name 
+                `SELECT images.id, images.title, images.url_webp_preview, images.url_webp_full, images.url_full, images.url_medium, images.url_small, images.created_at, users.username AS author, users.avatar_url AS author_url, 
+                    (SELECT COUNT(likes.image_id) FROM likes WHERE image_id=images.id) AS likes,
+                    (SELECT ARRAY_AGG(tags.name) 
                             FROM image_tags 
                             INNER JOIN tags 
                             ON tags.id=image_tags.tag_id 
-                            WHERE image_tags.image_id=images.id)
+                            WHERE image_tags.image_id=images.id) AS tags
                         FROM images 
                         INNER JOIN likes ON likes.image_id=images.id
+                        INNER JOIN users ON users.id=images.user_id
                         WHERE likes.user_id=${userId} 
                         ORDER BY likes.created_at DESC
                         LIMIT ${limit} OFFSET ${(limit * page) - limit}`

@@ -94,11 +94,10 @@ export default class imageController {
             const { id: userId } = req.params;
             const page = req.query._page || 1;
 
-            const { username } = await userDatabase.select(userId);
             const userImages = await imageDatabase.selectUserImages(userId, page);
-            if (!userImages || !username) throw new Error();
+            if (!userImages) throw new Error();
 
-            res.json({ user: username, userImages });
+            res.json(userImages);
         } catch (error) {
             res.status(400).json({ message: "Get User Images Error" });
         }

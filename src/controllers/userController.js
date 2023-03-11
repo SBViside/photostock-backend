@@ -5,10 +5,23 @@ import userDatabase from '../database/userDatabase.js';
 import imageService from '../services/imageService.js';
 
 export default class userController {
-    static async getInfo(req, res) {
+    static async getSelfInfo(req, res) {
         try {
             const accessToken = req.headers.authorization.split(' ')[1];
             const { userId } = jwt.verify(accessToken, process.env.JWT_SECRET_ACCESS);
+
+            const user = await userDatabase.select(userId);
+            if (!user) throw new Error();
+
+            res.json(user);
+        } catch (error) {
+            res.status(400).json({ message: "Get Self Data Error" });
+        }
+    }
+
+    static async getUserInfo(req, res) {
+        try {
+            const { id: userId } = req.params;
 
             const user = await userDatabase.select(userId);
             if (!user) throw new Error();
@@ -25,7 +38,7 @@ export default class userController {
             const { userId } = jwt.verify(accessToken, process.env.JWT_SECRET_ACCESS);
             const page = req.query._page || 1;
 
-            const liked = await imageDatabase.selectUserImages(userId, page);
+            const liked = await imageDatabase.selectLikedImages(userId, page);
             if (!liked) throw new Error();
 
             res.json(liked);
