@@ -10,7 +10,7 @@ const router = Router();
 
 router.get('/images/tags', imageController.tags); // REVIEW | IMAGE TAGS BY SIGNATURE
 
-// router.get('/images', null); // FIXME | GET LATEST IMAGES BY PAGE 
+router.get('/images', imageController.getImages); // FIXME | GET LATEST IMAGES BY PAGE 
 router.post('/images', [authOnlyMiddleware,
     check('image')
         .custom(httpFileExists)

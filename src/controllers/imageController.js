@@ -2,11 +2,22 @@ import jwt from 'jsonwebtoken';
 import { validationResult } from 'express-validator';
 import imageDatabase from "../database/imageDatabase.js";
 import { likeDatabase } from '../database/likeDatabase.js';
-import userDatabase from "../database/userDatabase.js";
 import imageService from '../services/imageService.js';
 import { tagDatabase } from '../database/tagDatabase.js';
 
 export default class imageController {
+    static async getImages(req, res) {
+        try {
+            const { _page: page, _tags, _order: order } = req.query;
+            const tags = _tags.split(',').map(t => t.trim().toLowerCase());
+
+
+            res.json("ok");
+        } catch (error) {
+            res.status(400).json({ message: "Get Images Error" });
+        }
+    }
+
     static async postImage(req, res) {
         try {
             // VALIDATION
